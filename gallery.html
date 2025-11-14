@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main>
+        <div class="container">
+            <div class="image-container">
+                <button id="previous"><</button>
+                <img class="image" data-image="3" src="images/Purple.jpg" alt="purple"/>
+                <button id="next">></button>
+            </div>
+            <div class="images-preview">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const images = [
+            {   
+                id: 1,
+                src: "images/Blue.jpg",
+                alt:"blue"
+            },
+            {   
+                id: 2,
+                src: "images/Pink.jpg",
+                alt:"pink"
+            },
+            {   
+                id: 3,
+                src: "images/Purple.jpg",
+                alt:"purple"
+            },
+            {   
+                id: 4,
+                src: "images/Green.jpg",
+                alt:"green"
+            },
+            {   
+                id: 5,
+                src: "images/Gray.png",
+                alt:"gray"
+            },
+        ]
+        
+        class gallery{
+            constructor(container){
+                this.container = container;
+
+                this.buttons = container.querySelectorAll('button')
+                this.prevButton = container.querySelector('#previous');
+                this.nextButton = container.querySelector('#next');
+                this.allImages = container.querySelector('.images-preview');
+                this.image = container.querySelector('img')
+                
+                // this.getChildren()
+                this.bind();
+                this.displayPreview();
+            }
+            
+            bind(){
+                this.buttons.forEach(button => button.addEventListener("click", (e) => this.switchImage(e)))
+            }
+
+            displayPreview(){
+                const ul = document.createElement('ul');
+    
+                images.forEach(element => {
+                    const li = document.createElement('li');
+                    const img = document.createElement('img');
+                    img.src = element.src;
+                    img.id = element.id;
+                    img.style.height = "50px";
+                    img.setAttribute("data-image", element.id);
+
+                    if(element.alt === "purple") img.className = "active"
+                    li.append(img);
+                    ul.append(li);
+                })
+
+                this.allImages.append(ul);
+            }
+            
+            // showPrev(e){
+            //     let currImage = Number(this.image.getAttribute("data-image"))
+
+            //     if(currImage > 1){
+            //         currImage -= 1;
+            //         const newImage = images.filter(element => element.id == currImage)[0];
+            //         this.image.setAttribute("data-image", currImage)
+            //         this.image.src = newImage.src;
+            //         this.image.alt = newImage.alt;
+            //     }
+            // }
+
+            // showNext(e){
+            //     let currImage = Number(this.image.getAttribute("data-image"))
+                
+            //     if(currImage < 5){
+            //         currImage += 1;
+            //         const newImage = images.filter(element => element.id == currImage)[0];
+            //         this.image.setAttribute("data-image", currImage)
+            //         this.image.src = newImage.src;
+            //         this.image.alt = newImage.alt;
+            //     }
+            // }
+            
+            switchImage(e){
+                let currImage = Number(this.image.getAttribute("data-image"));
+                const previewImages = this.allImages.querySelectorAll('img');
+                
+                previewImages.forEach(element => element.classList.remove('active'))
+                
+                if(e.target.id === "previous"){
+                    this.nextButton.disabled = false
+
+                    if(currImage > 1) {
+                        currImage -= 1;
+
+                        if(currImage === 1){
+                            e.target.disabled = true
+                        }
+                    }
+                }
+
+                if(e.target.id === "next"){
+                    this.prevButton.disabled = false
+
+                    if(currImage < 5) {
+                        currImage += 1;
+        
+                        if(currImage === 5){
+                            e.target.disabled = true
+                        }
+                    }
+                }
+
+                const currPreviewImage = this.allImages.querySelector(`[data-image="${currImage}"]`)
+                currPreviewImage.classList.add('active');
+
+                const newImage = images.filter(element => element.id == currImage)[0];
+                this.image.setAttribute("data-image", currImage)
+                this.image.src = newImage.src;
+                this.image.alt = newImage.alt;
+            }
+            
+        }
+
+        const container = document.querySelector('.container');
+
+        new gallery(container);
+        
+    </script>
+</body>
+</html>
