@@ -1,0 +1,27 @@
+body{
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif
+}
+
+.board{
+    overflow-x: auto
+}
+
+.drag-over {
+    outline: 3px dashed rgba(59, 130, 246, 0.6);
+}
+
+.card-dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+}
+
+::-webkit-scrollbar {
+    /* height: 8px;
+    width: 8px;*/
+    display: none;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+}

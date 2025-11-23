@@ -4,7 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body{
+            padding: 0;
+            margin: 0;
+        }
+
+        main{
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgb(35, 34, 34);
+        }
+
+        .container{
+            border: 2px solid black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            padding: 40px 10px;
+        }
+
+        .image-container{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        ul{
+            display: flex;
+            list-style: none;
+        }
+
+        ul li img{
+            opacity: 0.5;
+        }
+
+        ul li .active{
+            opacity: 1;
+            border: 2px solid black;
+        }
+
+        img{
+            height: 500px;
+        }
+
+        button{
+            padding: 20px 10px;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+            border-radius: 5px;
+        }
+
+        button:hover{
+            background-color: rgb(65, 63, 63);
+        }
+
+        button:disabled{
+            background-color: rgb(233, 231, 231);
+            color: white;
+        }
+
+    </style>
 </head>
 <body>
     <main>
@@ -86,30 +151,6 @@
                 this.allImages.append(ul);
             }
             
-            // showPrev(e){
-            //     let currImage = Number(this.image.getAttribute("data-image"))
-
-            //     if(currImage > 1){
-            //         currImage -= 1;
-            //         const newImage = images.filter(element => element.id == currImage)[0];
-            //         this.image.setAttribute("data-image", currImage)
-            //         this.image.src = newImage.src;
-            //         this.image.alt = newImage.alt;
-            //     }
-            // }
-
-            // showNext(e){
-            //     let currImage = Number(this.image.getAttribute("data-image"))
-                
-            //     if(currImage < 5){
-            //         currImage += 1;
-            //         const newImage = images.filter(element => element.id == currImage)[0];
-            //         this.image.setAttribute("data-image", currImage)
-            //         this.image.src = newImage.src;
-            //         this.image.alt = newImage.alt;
-            //     }
-            // }
-            
             switchImage(e){
                 let currImage = Number(this.image.getAttribute("data-image"));
                 const previewImages = this.allImages.querySelectorAll('img');
@@ -154,7 +195,7 @@
         const container = document.querySelector('.container');
 
         new gallery(container);
-        
+
     </script>
 </body>
 </html>
