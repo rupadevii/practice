@@ -124,6 +124,13 @@ class StateManager{
         list.cards = list.cards.filter((c) => c.id !== cardId);
         this.save();
     }
+
+    addCardDetails(boardId, listId, cardId){
+        const list = this._findList(boardId, listId);
+        if (!list) return;
+        const currentCard = list.cards.find((c) => c.id === cardId);
+        console.log(currentCard.id)
+    }
 }
 
 const state = new StateManager();
@@ -138,8 +145,8 @@ function createBoardNode(board){
     <div data-board-id="${board.id}">
         <div class="flex items-start gap-3 px-5 items-center">
             <h3 class="flex-1 text-xl">${board.title}</h3>
-            <button data-action = "add-list" class="rounded-full px-2 py-1 hover:bg-zinc-700"><i class="fa-solid fa-plus"></i></button>
-            <button data-action = "delete-board" class="rounded-full px-3 py-2 hover:bg-zinc-700"><i class="fa fa-trash"></i></button>
+            <button data-action = "add-list" class="rounded-full px-2 py-1 hover:bg-zinc-700 border border-white hover:border-black"><i class="fa-solid fa-plus"></i></button>
+            <button data-action = "delete-board" class="rounded-full px-2 py-1 hover:bg-zinc-700 border border-white hover:border-black"><i class="fa fa-trash"></i></button>
         </div>
         <div data-board-id = "${board.id}" class = "board lists flex-wrap lg:flex-nowrap flex items-start gap-4 m-2"></div>
     </div>
@@ -149,7 +156,7 @@ function createBoardNode(board){
 
 function createListNode(boardId, list){
     const liWrapper = document.createElement("div");
-    liWrapper.className = "bg-zinc-800 mt-1 py-3 px-4 rounded-md flex flex-col gap-2 w-[400px] lg:w-[300px] lg:shrink-0";
+    liWrapper.className = "list bg-zinc-800 mt-1 py-3 px-4 rounded-md flex flex-col gap-2 w-[400px] lg:w-[300px] lg:shrink-0";
     liWrapper.dataset.listId = list.id;
 
     const cardsHTML = list.cards.map((c) => createCardNode(c)).join("");
@@ -175,7 +182,7 @@ function createListNode(boardId, list){
 
 function createCardNode(card){
     return `
-        <div data-card-id="${card.id}" class="card bg-zinc-900 border-b border-s border-gray-600 px-4 py-3 rounded flex items-center hover:bg-zinc-700 hover:cursor-pointer">
+        <div data-card-id="${card.id}" class="card bg-zinc-900 border-b border-s border-gray-600 px-4 py-3 rounded flex items-center hover:bg-zinc-700 hover:cursor-pointer" draggable=true>
             <h3 class="flex-1">${card.content}</h3>
             <div>
                 <button data-action="card-details" class="rounded-full px-2 py-1 hover:bg-zinc-900"><i class="fas fa-ellipsis-v"></i></button>
@@ -237,11 +244,21 @@ searchInput.addEventListener("change", (e) => {
     renderElements(value);
 });
 
-addBoardBtn.addEventListener("click", () => {
-    const title = prompt("Enter your board title", "New Board");
-    if(!title) return;
+const boardModalContainer = document.getElementById("board-modal-container");
+const boardForm = document.forms.boardform
 
-    state.addBoard(title)
+addBoardBtn.addEventListener("click", () => {
+    boardModalContainer.classList.remove("hidden");
+})
+
+boardForm.addEventListener("submit", (e) => {
+    e.preventDefault()
+    const title = document.getElementById("boardName").value.trim();
+    if(!title) return;
+    state.addBoard(title);
+
+    boardModalContainer.classList.add("hidden");
+    boardForm.reset()
 })
 
 boardsContainer.addEventListener("click", (e) => {
@@ -285,6 +302,7 @@ boardsContainer.addEventListener("click", (e) => {
         if (!content) return;
 
         state.addCard(boardId, listId, content);
+        console.log(e.target.closest("[data-list-id"))
     }
 
     if (action === "delete-card") {
@@ -303,17 +321,18 @@ boardsContainer.addEventListener("click", (e) => {
         state.removeCard(loc.boardId, loc.listId, cardId);
     }
 
-    // if (action === "card-details"){
-    //     alert('Clicked')
-    // }
+    if (action === "card-details"){
+        e.stopPropagation()
+        showModal()
+    }
 
 })
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "n" && e.metaKey) {
-    e.preventDefault();
-    addBoardBtn.click();
-  }
+    if (e.key === "n" && e.metaKey) {
+        e.preventDefault();
+        addBoardBtn.click();
+    }
 });
 
 function findCardLocation(cardId) {
@@ -321,11 +340,78 @@ function findCardLocation(cardId) {
         for (const l of b.lists) {
             if (l.cards.some((c) => c.id === cardId)){
                 return {
-            boardId: b.id,
-            listId: l.id,
-            };
+                    boardId: b.id,
+                    listId: l.id,
+                };
             }
         }
     }
     return null;
 }
+
+//modal event listeners
+const modal = document.getElementById("modal")
+const container = document.getElementById("container")
+const saveBtn = document.getElementById("modelSave")
+
+function showModal(){
+    modal.classList.remove("hidden")
+}
+
+function hideModal(){
+    modal.classList.add("hidden")
+}
+
+document.addEventListener("click", (e) => {
+    hideModal()
+})
+
+container.addEventListener("click", (e) => {
+    showModal()
+    e.stopPropagation()
+})
+
+//dnd
+const cards = document.querySelectorAll('.card')
+const lists = document.querySelectorAll('.list')
+
+console.log(lists)
+
+let draggedItem = null;
+let draggedFrom = null;
+
+cards.forEach((card) => {
+    card.addEventListener("dragstart", (e) => {
+        draggedItem = card;
+        draggedFrom = card.parentElement.dataset.listId;
+        card.classList.add('card-dragging')
+    })
+
+    card.addEventListener("dragend", () => {
+        draggedFrom = null;
+        draggedItem = null;
+        card.classList.remove("card-dragging")
+    })
+})
+
+lists.forEach((list) => {
+    list.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        list.classList.add('drag-over')
+    })
+
+    list.addEventListener("dragenter", (e) => {
+        list.classList.add('drag-over')
+    })
+
+    list.addEventListener('dragleave', (e) => {
+        list.classList.remove('drag-over')
+    })
+
+    list.addEventListener('drop', (e) => {
+        list.classList.remove('drag-over')
+        if(draggedItem){
+            list.children[0].children[1].appendChild(draggedItem)
+        }
+    })
+})
