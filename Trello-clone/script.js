@@ -61,7 +61,6 @@ class StateManager{
             }
 
             const parsed = JSON.parse(raw);
-            console.log("parsed", parsed);
             return parsed.map((b) => new Board(b));
             
         } catch(error){
@@ -129,7 +128,6 @@ class StateManager{
         const list = this._findList(boardId, listId);
         if (!list) return;
         const currentCard = list.cards.find((c) => c.id === cardId);
-        console.log(currentCard.id)
     }
 }
 
@@ -302,7 +300,6 @@ boardsContainer.addEventListener("click", (e) => {
         if (!content) return;
 
         state.addCard(boardId, listId, content);
-        console.log(e.target.closest("[data-list-id"))
     }
 
     if (action === "delete-card") {
@@ -372,46 +369,58 @@ container.addEventListener("click", (e) => {
 })
 
 //dnd
-const cards = document.querySelectorAll('.card')
-const lists = document.querySelectorAll('.list')
-
-console.log(lists)
 
 let draggedItem = null;
 let draggedFrom = null;
 
-cards.forEach((card) => {
-    card.addEventListener("dragstart", (e) => {
-        draggedItem = card;
-        draggedFrom = card.parentElement.dataset.listId;
-        card.classList.add('card-dragging')
-    })
-
-    card.addEventListener("dragend", () => {
-        draggedFrom = null;
-        draggedItem = null;
-        card.classList.remove("card-dragging")
-    })
+boardsContainer.addEventListener("dragstart", (e) => {
+    if(e.target.closest(".card")){
+        draggedItem = e.target;
+        draggedFrom = findCardLocation(draggedItem.dataset.cardId);
+        draggedItem.classList.add('card-dragging')
+    }
 })
 
-lists.forEach((list) => {
-    list.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        list.classList.add('drag-over')
-    })
+boardsContainer.addEventListener("dragend", (e) => {
+    if(e.target.closest(".card")){
+        draggedFrom = null;
+        draggedItem = null;
+        e.target.classList.remove("card-dragging")
+    }
+})
 
-    list.addEventListener("dragenter", (e) => {
-        list.classList.add('drag-over')
-    })
+boardsContainer.addEventListener("dragover", (e) => {
+    if(e.target.closest(".list")){
+        e.preventDefault()
+        e.target.closest(".list").classList.add('drag-over')
+    }
+})
 
-    list.addEventListener('dragleave', (e) => {
-        list.classList.remove('drag-over')
-    })
+boardsContainer.addEventListener("dragenter", (e) => {
+    if(e.target.matches(".list")){
+        e.preventDefault()
+        e.target.classList.add('drag-over')
+    }
+})
 
-    list.addEventListener('drop', (e) => {
-        list.classList.remove('drag-over')
+boardsContainer.addEventListener('dragleave', (e) => {
+    e.preventDefault()
+    if(e.target.closest(".list")){
+       e.target.closest(".list").classList.remove("drag-over")
+    }
+})
+
+boardsContainer.addEventListener('drop', (e) => {
+    if(e.target.closest(".list")){
+        const currTarget = e.target.closest(".list")
+        currTarget.classList.remove('drag-over')
+        const boardId = e.target.closest("[data-board-id]").dataset.boardId
+        const listId = e.target.closest("[data-list-id]").dataset.listId;
         if(draggedItem){
-            list.children[0].children[1].appendChild(draggedItem)
+            const cardContent = draggedItem.textContent
+            currTarget.children[0].children[1].appendChild(draggedItem);
+            state.addCard(boardId, listId, cardContent)
+            state.removeCard(draggedFrom.boardId, draggedFrom.listId, draggedItem.dataset.cardId)
         }
-    })
+    }
 })
